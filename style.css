@@ -1,0 +1,56 @@
+#container {
+  display: grid;
+  grid-template-areas:
+    "contacts chat"
+    "contacts input";
+  grid-template-rows: 80% 1fr;
+  grid-template-columns: 10% 1fr;
+  height: 95vh;
+  grid-gap: 1vh;
+}
+#container > div {
+  background: grey;
+}
+
+#input-block {
+  grid-area: input;
+}
+
+#contacts-block {
+  grid-area: contacts;
+}
+
+#chat-block {
+  grid-area: chat;
+  overflow-y: scroll;
+}
+
+#form {
+  height: 100%;
+  display: flex;
+}
+
+#input {
+  width: 30%;
+  resize: none;
+}
+
+#button {
+  width: 10%;
+}
+
+.message {
+  background: green;
+  padding: 2vh;
+  max-width: 20vh;
+  word-break: break-all;
+  border-radius: 10px;
+}
+
+.left {
+  margin: 2vh 2vh 2vh 2vh;
+}
+
+.right {
+  margin: 2vh 2vh 2vh auto;
+}
