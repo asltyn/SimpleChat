@@ -1,7 +1,7 @@
-const InputBlock = ({ handler }) => {
+const InputBlock = ({ addMessage }) => {
   const [text, setText] = React.useState("")
   const send = () => {
-    handler({ text: text, pos: "right" })
+    addMessage({ text: text, pos: "right" })
     console.log(text)
   }
   const print = (e) => {
@@ -16,39 +16,93 @@ const InputBlock = ({ handler }) => {
     </div>
   )
 }
-const ContactsBlock = () => (
+const ContactsBlock = ({ storage, idSetter }) => (
   <div id="contacts-block">
     <div id="contacts">
-      <div className="contact">name1</div>
-      <div className="contact">name2</div>
+      <Contacts storage={storage} idSetter={idSetter} />
     </div>
     <div id="add-contact"></div>
   </div>
 )
 
-const Message = ({ text, pos }) => (
-  <div className={`message ${pos}`}>
-    <span>{text}</span>
-  </div>
-)
+const Contacts = ({ storage, idSetter }) => {
+  const { contacts, activeId } = storage
+  return contacts.map(({ id, name }) => (
+    <div className={`contact ${id === activeId ? "active" : ""}`} onClick={() => idSetter(id)}>
+      <span>{name}</span>
+    </div>
+  ))
+}
+
+const Message = ({ text, pos }) => {
+  const divRef = React.useRef(null)
+  React.useEffect(() => {
+    divRef.current.scrollIntoView({ behavior: "smooth" })
+  })
+
+  return (
+    <div className={`message ${pos}`} ref={divRef}>
+      <span>{text}</span>
+    </div>
+  )
+}
 
 const ChatBlock = (props) => {
-  const x = props.messages.map(({ text, pos }, i) => <Message key={i} text={text} pos={pos} />)
-  return <div id="chat-block">{x}</div>
+  return (
+    <div id="chat-block">
+      {props.messages.map(({ text, pos }, i) => (
+        <Message key={i} text={text} pos={pos} />
+      ))}
+    </div>
+  )
+}
+
+const state = {
+  contacts: [
+    {
+      id: 1,
+      name: "name1",
+      messages: [
+        { text: "name1", pos: "left" },
+        { text: "name1", pos: "right" },
+      ],
+    },
+    {
+      id: 3,
+      name: "name3",
+      messages: [
+        { text: "name3", pos: "left" },
+        { text: "name3", pos: "right" },
+      ],
+    },
+    {
+      id: 2,
+      name: "name2",
+      messages: [
+        { text: "name2", pos: "left" },
+        { text: "name2", pos: "right" },
+      ],
+    },
+  ],
+  activeId: 1,
 }
 
 const App = () => {
-  const [messages, setMessages] = React.useState([
-    { text: "text1", pos: "left" },
-    { text: "text2", pos: "left" },
-    { text: "text3", pos: "right" },
-    { text: "text4", pos: "right" },
-  ])
+  const [storage, setStorage] = React.useState(state)
+
   return (
     <div id="container">
-      {<ContactsBlock />}
-      {<InputBlock handler={(newMessage) => setMessages([...messages, newMessage])} />}
-      {<ChatBlock messages={messages} />}
+      {<ContactsBlock storage={storage} idSetter={(id) => setStorage({ ...storage, activeId: id })} />}
+      {
+        <InputBlock
+          addMessage={(newMessage) => {
+            const newStorage = { ...storage }
+            newStorage.contacts.find(({ id }) => storage.activeId === id).messages.push(newMessage)
+            setStorage(newStorage)
+          }}
+        />
+      }
+      {<ChatBlock messages={storage.contacts.find(({ id }) => storage.activeId === id).messages} />}
     </div>
   )
 }

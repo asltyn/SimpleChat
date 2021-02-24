@@ -18,6 +18,9 @@
 
 #contacts-block {
   grid-area: contacts;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
 }
 
 #chat-block {
@@ -53,4 +56,15 @@
 
 .right {
   margin: 2vh 2vh 2vh auto;
+}
+
+.contact {
+  background: pink;
+  padding: 2vh;
+  margin: 2vh;
+  border-radius: 10px;
+}
+
+.active {
+  border: 2px solid;
 }
