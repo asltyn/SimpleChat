@@ -1,3 +1,16 @@
+const sendToServer = text => {
+  fetch("/chat", {
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    method: "POST",
+    body: JSON.stringify({
+      text
+    })
+  }).then(resp => resp.text()).then(resp => console.log(resp));
+};
+
 const InputBlock = ({
   addMessage
 }) => {
@@ -8,7 +21,7 @@ const InputBlock = ({
       text: text,
       pos: "right"
     });
-    console.log(text);
+    sendToServer(text); //console.log(text)
   };
 
   const print = e => {
