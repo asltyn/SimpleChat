@@ -40,7 +40,6 @@
 
 #contacts-block {
   grid-area: contacts;
-  overflow-y: scroll;
   display: flex;
   flex-direction: column;
 }
@@ -68,6 +67,20 @@
 
 #button {
   width: 10%;
+}
+#contacts {
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+}
+#add-contact {
+  background: white;
+  height: 50px;
+}
+
+#add-btn {
+  height: 100%;
+  width: 100%;
 }
 
 .message {

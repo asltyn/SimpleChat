@@ -1,3 +1,8 @@
+import Ring from "./reactComponents/Ring.js"
+import ReactDOM from "react-dom"
+import React from "react"
+import "./style.css"
+
 const sendToServer = async (data, path) => {
   const resp = await fetch(path, {
     headers: {
@@ -8,6 +13,9 @@ const sendToServer = async (data, path) => {
     body: JSON.stringify(data),
   })
   const text = await resp.json()
+  console.log(1)
+  console.log(text)
+  console.log(2)
   return text.answer
 }
 
@@ -58,12 +66,47 @@ const InputBlock = (props) => {
   )
 }
 
+const ModalFindContact = (props) => {
+  return (
+    <div>
+      <p>Find contact</p>
+      <input type="text" className="inp"></input>
+      <input type="button" className="btn" value="Find"></input>
+    </div>
+  )
+}
+
+const ModalAddContact = (props) => {
+  return (
+    <div>
+      <p>Contact</p>
+      <input type="button" className="btn" value="Add"></input>
+    </div>
+  )
+}
+
 const ContactsBlock = (props) => (
   <div id="contacts-block">
     <div id="contacts">
       <Contacts {...props} />
     </div>
-    <div id="add-contact"></div>
+    <div id="add-contact">
+      <input id="add-btn" type="button" value="Add contact" onClick={props.funcs.addContactHandler}></input>
+    </div>
+    <div id="myModal" className="modal" style={{ display: props.data.modalState === "none" ? "none" : "block" }}>
+      <div className="modal-content">
+        <span className="close" onClick={props.funcs.closeModalHandler}>
+          &times;
+        </span>
+        {
+          {
+            input: <ModalFindContact {...props} />,
+            search: <Ring />,
+            find: <ModalAddContact {...props} />,
+          }[props.data.modalState]
+        }
+      </div>
+    </div>
   </div>
 )
 
@@ -128,6 +171,9 @@ function app() {
     modal: "none",
   }
   this.loginFuncs = {
+    resetInputs: () => {
+      ;(this.loginData.login = ""), (this.loginData.password = "")
+    },
     enterHandler: async () => {
       this.loginData.serverWait = true
       this.render()
@@ -139,6 +185,7 @@ function app() {
         this.loginData.modal = "block"
         this.loginData.modalText = "Username or password is incorrect. Try again."
       }
+      this.loginFuncs.resetInputs()
       this.render()
     },
     registerHandler: async () => {
@@ -146,12 +193,9 @@ function app() {
       this.render()
       this.loginData.serverResp = await sendToServer(this.loginData, "/register")
       this.loginData.serverWait = false
-      if (this.loginData.serverResp) {
-        this.currentPage = "chat"
-      } else {
-        this.loginData.modal = "block"
-        this.loginData.modalText = "Sorry, this username is already taken. Please try something different."
-      }
+      this.loginData.modal = "block"
+      this.loginData.modalText = this.loginData.serverResp
+      this.loginFuncs.resetInputs()
       this.render()
     },
     changeLoginInput: (event) => {
@@ -168,6 +212,7 @@ function app() {
     },
   }
   this.chatData = {
+    modalState: "none",
     contacts: [
       {
         id: 1,
@@ -198,6 +243,18 @@ function app() {
     inputText: "",
   }
   ;(this.chatFuncs = {
+    closeModalHandler: () => {
+      this.chatData.modalState = "none"
+      this.render()
+    },
+    addContactHandler: () => {
+      this.chatData.modalState = "input"
+      this.render()
+    },
+    searchContact: () => {
+      this.chatData.modalState = "search"
+      this.render()
+    },
     changeActiveContact: (id) => {
       this.chatData.activeContactId = id
       this.chatData.inputText = ""
@@ -214,24 +271,12 @@ function app() {
       this.render()
     },
   }),
-    (this.currentPage = "login")
+    (this.currentPage = "chat")
   this.getPage = () => this.pages[this.currentPage]()
-  this.render = () => ReactDOM.render(this.getPage(), document.getElementById("root"))
+  this.render = () => {
+    ReactDOM.render(this.getPage(), document.getElementById("root"))
+  }
 }
 const myApp = new app()
 
 myApp.render()
-
-const g = () => {
-  const xhr = new XMLHttpRequest()
-  xhr.onprogress = (event) => {
-    console.log(xhr.responseText)
-  }
-  xhr.onerror = function () {
-    // происходит, только когда запрос совсем не получилось выполнить
-    console.log(`Ошибка соединения`)
-  }
-  xhr.open("GET", "/messageChannel", true)
-  console.log("send")
-  xhr.send()
-}

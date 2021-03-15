@@ -1,56 +1,26 @@
 const express = require("express")
-const fs = require("fs")
+const mongoose = require("mongoose")
+const logger = require("./middlewares/logger.js")
+const registerUser = require("./middlewares/registerUser.js")
+const validateUser = require("./middlewares/validateUser.js")
+const timeout = require("./middlewares/timeout.js")
+const authUser = require("./middlewares/authUser.js")
+
+mongoose.connect("mongodb://localhost/simpleChatDB", { useNewUrlParser: true, useUnifiedTopology: true }, () => console.log("Connect to DB"))
 
 const app = express()
 
 app.use(express.json())
-
-//server log
-app.use(function (req, resp, next) {
-  let now = new Date()
-  let hour = now.getHours()
-  let minutes = now.getMinutes()
-  let seconds = now.getSeconds()
-  let data = `${hour}:${minutes}:${seconds} ${req.method} ${req.url} ${JSON.stringify(req.body)}`
-  console.log(data)
-  fs.appendFile("server.log", data + "\n", function () {})
-  next()
-})
+app.use(logger)
 
 //
 let x
-app.use(express.json())
-app.use("/", express.static(__dirname + "/public"))
 
-const users = [
-  { login: "aaa", password: "sss" },
-  { login: "bbb", password: "nnn" },
-]
+app.use("/", express.static(__dirname + "/dist"))
 
-const auth = (req, res, next) => {
-  const { login, password } = req.body
-  res.auth = users.some((u) => u.login === login && u.password === password)
-  next()
-}
+app.post("/auth", timeout, validateUser, authUser)
 
-const register = (req, res, next) => {
-  const { login, password } = req.body
-  const isLoginFree = users.every((u) => u.login !== login)
-  if (isLoginFree) {
-    users.push({ login, password })
-  }
-  res.reg = isLoginFree
-  next()
-}
-
-app.post("/auth", auth, (req, resp) => {
-  setTimeout(() => resp.send(JSON.stringify({ answer: resp.auth })), 1000)
-  console.log(users)
-})
-
-app.post("/register", register, (req, resp) => {
-  setTimeout(() => resp.send(JSON.stringify({ answer: resp.reg })), 1000)
-})
+app.post("/register", timeout, validateUser, registerUser)
 
 app.get("/messageChannel", (req, resp) => {
   console.log(req.header, req.body)
@@ -63,4 +33,4 @@ app.get("/messageChannel", (req, resp) => {
   //resp.end()
 })
 
-app.listen(3000)
+const server = app.listen(3000, () => console.log("Server has been started ..."))
